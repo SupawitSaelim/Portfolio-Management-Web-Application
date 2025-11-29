@@ -14,13 +14,13 @@ export function PortfolioList({ portfolios, onEdit, onDelete, onAddTransaction, 
   if (portfolios.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full mb-4">
+          <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-1">No portfolios yet</h3>
-        <p className="text-sm text-gray-500">Create your first portfolio to start tracking investments</p>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">No portfolios yet</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Create your first portfolio to start tracking investments</p>
       </div>
     );
   }
@@ -46,7 +46,7 @@ export function PortfolioList({ portfolios, onEdit, onDelete, onAddTransaction, 
         return (
           <div
             key={portfolio.id}
-            className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden"
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg dark:shadow-gray-900/50 transition-shadow duration-200 overflow-hidden"
           >
             {/* Header */}
             <div className={`${investmentType.color} p-4 text-white`}>
@@ -94,42 +94,80 @@ export function PortfolioList({ portfolios, onEdit, onDelete, onAddTransaction, 
               {/* Current Value */}
               <div>
                 <div className="flex justify-between items-baseline mb-1">
-                  <span className="text-sm text-gray-600">Current Value</span>
-                  <span className="text-2xl font-bold text-gray-900">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Current Value</span>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
                     {formatCurrency(portfolio.currentValue)}
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline text-sm">
-                  <span className="text-gray-500">Invested: {formatCurrency(portfolio.totalInvested)}</span>
+                  <span className="text-gray-500 dark:text-gray-400">Invested: {formatCurrency(portfolio.totalInvested)}</span>
                   <span className={`font-medium ${portfolio.totalReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {formatPercentage(portfolio.returnPercentage)}
                   </span>
                 </div>
                 {/* Total Units for Mutual Funds */}
                 {portfolio.investmentType === 'mutual_fund' && portfolio.totalUnits !== undefined && portfolio.totalUnits > 0 && (
-                  <div className="mt-2 text-sm text-gray-600">
-                    Total Units: <span className="font-semibold text-gray-900">{portfolio.totalUnits.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}</span>
+                  <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    Total Units: <span className="font-semibold text-gray-900 dark:text-white">{portfolio.totalUnits.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}</span>
                   </div>
                 )}
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-2 gap-4 pt-3 border-t border-gray-100">
+              <div className="grid grid-cols-2 gap-4 pt-3 border-t border-gray-100 dark:border-gray-700">
                 <div>
-                  <p className="text-xs text-gray-500">Transactions</p>
-                  <p className="text-lg font-semibold text-gray-900">{portfolio.transactionCount}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Transactions</p>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{portfolio.transactionCount}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Return</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Return</p>
                   <p className={`text-lg font-semibold ${portfolio.totalReturn >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {formatCurrency(portfolio.totalReturn)}
                   </p>
                 </div>
               </div>
 
+              {/* Target Progress */}
+              {portfolio.targetAmount && portfolio.targetAmount > 0 && (
+                <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
+                  <div className="flex justify-between items-baseline mb-2">
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Target Progress</span>
+                    <div className="text-right">
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {Math.min(Math.round((portfolio.currentValue / portfolio.targetAmount) * 100), 100)}%
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
+                        of {formatCurrency(portfolio.targetAmount)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        (portfolio.currentValue / portfolio.targetAmount) * 100 >= 100
+                          ? 'bg-gradient-to-r from-green-500 to-green-600'
+                          : (portfolio.currentValue / portfolio.targetAmount) * 100 >= 66
+                          ? 'bg-gradient-to-r from-green-400 to-green-500'
+                          : (portfolio.currentValue / portfolio.targetAmount) * 100 >= 33
+                          ? 'bg-gradient-to-r from-yellow-400 to-yellow-500'
+                          : 'bg-gradient-to-r from-red-400 to-red-500'
+                      }`}
+                      style={{
+                        width: `${Math.min((portfolio.currentValue / portfolio.targetAmount) * 100, 100)}%`
+                      }}
+                    />
+                  </div>
+                  {portfolio.currentValue < portfolio.targetAmount && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {formatCurrency(portfolio.targetAmount - portfolio.currentValue)} remaining
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Description */}
               {portfolio.description && (
-                <p className="text-sm text-gray-600 pt-2 border-t border-gray-100">
+                <p className="text-sm text-gray-600 dark:text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-700">
                   {portfolio.description}
                 </p>
               )}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTransaction } from '../hooks/useTransaction';
+import { useToast } from '../contexts/ToastContext';
 import { TransactionList } from './TransactionList';
 import { EditTransactionModal } from './EditTransactionModal';
 import { exportTransactionsToCSV } from '../utils/exportToCSV';
@@ -14,6 +15,7 @@ interface ViewTransactionsModalProps {
 
 export function ViewTransactionsModal({ isOpen, onClose, portfolio }: ViewTransactionsModalProps) {
   const { transactions, isLoading, deleteTransaction, updateTransaction } = useTransaction(portfolio?.id);
+  const { showToast } = useToast();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
@@ -28,6 +30,9 @@ export function ViewTransactionsModal({ isOpen, onClose, portfolio }: ViewTransa
     setDeletingId(transactionId);
     try {
       await deleteTransaction(transactionId);
+      showToast('Transaction deleted successfully', 'success');
+    } catch (error) {
+      showToast('Failed to delete transaction', 'error');
     } finally {
       setDeletingId(null);
     }
@@ -39,9 +44,15 @@ export function ViewTransactionsModal({ isOpen, onClose, portfolio }: ViewTransa
   };
 
   const handleUpdate = async (transactionId: string, input: UpdateTransactionInput) => {
-    await updateTransaction(transactionId, input);
-    setIsEditModalOpen(false);
-    setSelectedTransaction(null);
+    try {
+      await updateTransaction(transactionId, input);
+      setIsEditModalOpen(false);
+      setSelectedTransaction(null);
+      showToast('Transaction updated successfully', 'success');
+    } catch (error) {
+      showToast('Failed to update transaction', 'error');
+      throw error;
+    }
   };
 
   // Filter transactions

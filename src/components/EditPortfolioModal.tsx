@@ -1,31 +1,47 @@
-import { useState } from 'react';
-import type { CreatePortfolioInput, InvestmentType } from '../types/portfolio';
-import { INVESTMENT_TYPES } from '../types/portfolio';
+import { useState, useEffect } from 'react';
+import type { Portfolio, UpdatePortfolioInput } from '../types/portfolio';
 
-interface CreatePortfolioModalProps {
+interface EditPortfolioModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (input: CreatePortfolioInput) => Promise<void>;
+  onUpdate: (portfolioId: string, input: UpdatePortfolioInput) => Promise<void>;
+  portfolio: Portfolio | null;
 }
 
-export function CreatePortfolioModal({ isOpen, onClose, onCreate }: CreatePortfolioModalProps) {
-  const [formData, setFormData] = useState<CreatePortfolioInput>({
+export function EditPortfolioModal({ isOpen, onClose, onUpdate, portfolio }: EditPortfolioModalProps) {
+  const [formData, setFormData] = useState<UpdatePortfolioInput>({
     name: '',
-    investmentType: 'cooperative',
     description: '',
+    targetAmount: undefined,
   });
   const [targetAmountDisplay, setTargetAmountDisplay] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Pre-fill form when portfolio changes
+  useEffect(() => {
+    if (isOpen && portfolio) {
+      setFormData({
+        name: portfolio.name,
+        description: portfolio.description || '',
+        targetAmount: portfolio.targetAmount || undefined,
+      });
+      setTargetAmountDisplay(
+        portfolio.targetAmount ? portfolio.targetAmount.toLocaleString('en-US') : ''
+      );
+    }
+  }, [isOpen, portfolio]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!formData.name.trim()) {
+    if (!formData.name?.trim()) {
       setError('Portfolio name is required');
       return;
     }
+
+    if (!portfolio) return;
 
     setIsLoading(true);
 
@@ -34,15 +50,7 @@ export function CreatePortfolioModal({ isOpen, onClose, onCreate }: CreatePortfo
         ...formData,
         targetAmount: targetAmountDisplay ? parseFloat(targetAmountDisplay.replace(/,/g, '')) : undefined,
       };
-      await onCreate(submitData);
-      
-      // Reset form
-      setFormData({
-        name: '',
-        investmentType: 'cooperative',
-        description: '',
-      });
-      setTargetAmountDisplay('');
+      await onUpdate(portfolio.id, submitData);
       onClose();
     } catch (err: any) {
       setError(err.message);
@@ -66,7 +74,7 @@ export function CreatePortfolioModal({ isOpen, onClose, onCreate }: CreatePortfo
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !portfolio) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -82,12 +90,12 @@ export function CreatePortfolioModal({ isOpen, onClose, onCreate }: CreatePortfo
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
                 <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create Portfolio</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Portfolio</h2>
             </div>
             <button
               onClick={handleClose}
@@ -128,35 +136,9 @@ export function CreatePortfolioModal({ isOpen, onClose, onCreate }: CreatePortfo
               />
             </div>
 
-            {/* Investment Type */}
-            <div>
-              <label htmlFor="investmentType" className="block text-sm font-medium text-gray-700 mb-2">
-                Investment Type *
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {Object.entries(INVESTMENT_TYPES).map(([key, type]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, investmentType: key as InvestmentType })}
-                    className={`p-3 rounded-lg border-2 transition-all ${
-                      formData.investmentType === key
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <span className="text-2xl">{type.icon}</span>
-                      <span className="text-sm font-medium text-gray-900">{type.label}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                 Description
               </label>
               <textarea
@@ -164,28 +146,39 @@ export function CreatePortfolioModal({ isOpen, onClose, onCreate }: CreatePortfo
                 rows={3}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 placeholder="Add notes about this portfolio (optional)"
               />
             </div>
 
             {/* Target Amount */}
             <div>
-              <label htmlFor="targetAmount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="targetAmount" className="block text-sm font-medium text-gray-700 mb-1">
                 Target Amount (Optional)
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">฿</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">฿</span>
                 <input
                   id="targetAmount"
                   type="text"
                   value={targetAmountDisplay}
                   onChange={handleTargetAmountChange}
-                  className="w-full pl-8 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="e.g., 100,000"
                 />
               </div>
               <p className="mt-1 text-xs text-gray-500">Set a savings goal to track your progress</p>
+            </div>
+
+            {/* Investment Type (Read-only) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Investment Type
+              </label>
+              <div className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-600 text-sm">
+                {portfolio.investmentType.charAt(0).toUpperCase() + portfolio.investmentType.slice(1).replace('_', ' ')}
+                <span className="ml-2 text-xs text-gray-500">(Cannot be changed)</span>
+              </div>
             </div>
 
             {/* Actions */}
@@ -194,14 +187,14 @@ export function CreatePortfolioModal({ isOpen, onClose, onCreate }: CreatePortfo
                 type="button"
                 onClick={handleClose}
                 disabled={isLoading}
-                className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-medium rounded-lg hover:from-amber-700 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center">
@@ -209,10 +202,10 @@ export function CreatePortfolioModal({ isOpen, onClose, onCreate }: CreatePortfo
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Creating...
+                    Saving...
                   </span>
                 ) : (
-                  'Create Portfolio'
+                  'Save Changes'
                 )}
               </button>
             </div>
