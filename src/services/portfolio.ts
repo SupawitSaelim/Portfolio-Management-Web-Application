@@ -33,6 +33,8 @@ export const portfolioService = {
         transactionCount: 0,
         description: input.description || '',
         color: input.color || '',
+        currentNavPerUnit: 0,
+        totalUnits: 0,
         createdAt: now,
         updatedAt: now,
       };
@@ -81,6 +83,8 @@ export const portfolioService = {
           transactionCount: data.transactionCount,
           description: data.description,
           color: data.color,
+          currentNavPerUnit: data.currentNavPerUnit || 0,
+          totalUnits: data.totalUnits || 0,
           createdAt: data.createdAt?.toDate(),
           updatedAt: data.updatedAt?.toDate(),
         });
@@ -118,6 +122,8 @@ export const portfolioService = {
         transactionCount: data.transactionCount,
         description: data.description,
         color: data.color,
+        currentNavPerUnit: data.currentNavPerUnit || 0,
+        totalUnits: data.totalUnits || 0,
         createdAt: data.createdAt?.toDate(),
         updatedAt: data.updatedAt?.toDate(),
       };
@@ -168,6 +174,7 @@ export const portfolioService = {
       totalReturn: number;
       returnPercentage: number;
       transactionCount: number;
+      totalUnits?: number;
     }
   ): Promise<void> {
     try {
@@ -179,6 +186,21 @@ export const portfolioService = {
       console.log('✅ Portfolio stats updated:', portfolioId);
     } catch (error: any) {
       console.error('❌ Error updating portfolio stats:', error.message);
+      throw error;
+    }
+  },
+
+  // Update NAV for mutual fund portfolio
+  async updateNav(portfolioId: string, navPerUnit: number): Promise<void> {
+    try {
+      const docRef = doc(db, 'portfolios', portfolioId);
+      await updateDoc(docRef, {
+        currentNavPerUnit: navPerUnit,
+        updatedAt: Timestamp.now(),
+      });
+      console.log('✅ NAV updated:', portfolioId, navPerUnit);
+    } catch (error: any) {
+      console.error('❌ Error updating NAV:', error.message);
       throw error;
     }
   },

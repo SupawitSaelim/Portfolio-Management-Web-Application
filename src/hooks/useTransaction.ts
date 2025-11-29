@@ -56,14 +56,8 @@ export function useTransaction(portfolioId?: string) {
       setError(null);
       await transactionService.updateTransaction(transactionId, portfolioId, input);
       
-      // Update local state
-      setTransactions((prev) =>
-        prev.map((t) =>
-          t.id === transactionId
-            ? { ...t, ...input, updatedAt: new Date() }
-            : t
-        )
-      );
+      // Refresh transactions to get updated stats and accurate data
+      await loadTransactions();
     } catch (err: any) {
       setError(err.message);
       throw err;

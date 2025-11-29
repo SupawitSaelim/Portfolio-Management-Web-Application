@@ -37,6 +37,7 @@ export interface UpdateTransactionInput {
   amount?: number;
   date?: Date;
   notes?: string;
+  mutualFundDetails?: MutualFundDetails;
 }
 
 export interface TransactionStats {

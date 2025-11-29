@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useTransaction } from '../hooks/useTransaction';
 import { TransactionList } from './TransactionList';
+import { EditTransactionModal } from './EditTransactionModal';
+import { exportTransactionsToCSV } from '../utils/exportToCSV';
 import type { Portfolio } from '../types/portfolio';
+import type { Transaction, UpdateTransactionInput } from '../types/transaction';
 
 interface ViewTransactionsModalProps {
   isOpen: boolean;
@@ -10,8 +13,16 @@ interface ViewTransactionsModalProps {
 }
 
 export function ViewTransactionsModal({ isOpen, onClose, portfolio }: ViewTransactionsModalProps) {
-  const { transactions, isLoading, deleteTransaction } = useTransaction(portfolio?.id);
+  const { transactions, isLoading, deleteTransaction, updateTransaction } = useTransaction(portfolio?.id);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  
+  // Filter state
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'deposit' | 'withdrawal'>('all');
+  const [searchText, setSearchText] = useState('');
 
   const handleDelete = async (transactionId: string) => {
     setDeletingId(transactionId);
@@ -21,6 +32,66 @@ export function ViewTransactionsModal({ isOpen, onClose, portfolio }: ViewTransa
       setDeletingId(null);
     }
   };
+
+  const handleEdit = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdate = async (transactionId: string, input: UpdateTransactionInput) => {
+    await updateTransaction(transactionId, input);
+    setIsEditModalOpen(false);
+    setSelectedTransaction(null);
+  };
+
+  // Filter transactions
+  const filteredTransactions = transactions.filter((transaction) => {
+    // Filter by date range
+    if (startDate) {
+      const txDate = transaction.date instanceof Date ? transaction.date : new Date(transaction.date);
+      const start = new Date(startDate);
+      if (txDate < start) return false;
+    }
+    if (endDate) {
+      const txDate = transaction.date instanceof Date ? transaction.date : new Date(transaction.date);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999); // Include the entire end date
+      if (txDate > end) return false;
+    }
+
+    // Filter by type
+    if (typeFilter !== 'all' && transaction.type !== typeFilter) {
+      return false;
+    }
+
+    // Filter by search text
+    if (searchText) {
+      const search = searchText.toLowerCase();
+      const matchesNotes = transaction.notes?.toLowerCase().includes(search);
+      const matchesFundName = transaction.mutualFundDetails?.fundName?.toLowerCase().includes(search);
+      const matchesAmount = transaction.amount.toString().includes(search);
+      if (!matchesNotes && !matchesFundName && !matchesAmount) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  const clearFilters = () => {
+    setStartDate('');
+    setEndDate('');
+    setTypeFilter('all');
+    setSearchText('');
+  };
+
+  const handleExport = () => {
+    if (portfolio) {
+      exportTransactionsToCSV(filteredTransactions, portfolio.name);
+    }
+  };
+
+  const hasActiveFilters = startDate || endDate || typeFilter !== 'all' || searchText;
 
   if (!isOpen || !portfolio) return null;
 
@@ -51,6 +122,88 @@ export function ViewTransactionsModal({ isOpen, onClose, portfolio }: ViewTransa
             </button>
           </div>
 
+          {/* Filters */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-700">Filters</h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExport}
+                  disabled={filteredTransactions.length === 0}
+                  className="text-xs text-green-600 hover:text-green-700 font-medium disabled:text-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Export CSV
+                </button>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    Clear all
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Date Range */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-gray-600">Start Date</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-gray-600">End Date</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Type Filter */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-gray-600">Type</label>
+                <select
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value as 'all' | 'deposit' | 'withdrawal')}
+                  className="w-full px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Transactions</option>
+                  <option value="deposit">Deposits Only</option>
+                  <option value="withdrawal">Withdrawals Only</option>
+                </select>
+              </div>
+
+              {/* Search */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-gray-600">Search</label>
+                <input
+                  type="text"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  placeholder="Notes, fund name, amount..."
+                  className="w-full px-3 py-2 text-sm text-gray-900 placeholder-gray-400 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Results count */}
+            <div className="text-xs text-gray-500">
+              Showing {filteredTransactions.length} of {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
+            </div>
+          </div>
+
           {/* Content */}
           <div className="max-h-[500px] overflow-y-auto">
             {isLoading ? (
@@ -63,8 +216,9 @@ export function ViewTransactionsModal({ isOpen, onClose, portfolio }: ViewTransa
               </div>
             ) : (
               <TransactionList
-                transactions={transactions}
+                transactions={filteredTransactions}
                 onDelete={handleDelete}
+                onEdit={handleEdit}
                 deletingId={deletingId}
               />
             )}
@@ -81,6 +235,19 @@ export function ViewTransactionsModal({ isOpen, onClose, portfolio }: ViewTransa
           </div>
         </div>
       </div>
+
+      {/* Edit Transaction Modal */}
+      <EditTransactionModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedTransaction(null);
+        }}
+        onUpdate={handleUpdate}
+        transaction={selectedTransaction}
+        portfolioName={portfolio?.name || ''}
+        investmentType={portfolio?.investmentType}
+      />
     </div>
   );
 }

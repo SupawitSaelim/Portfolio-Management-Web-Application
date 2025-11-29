@@ -7,9 +7,10 @@ interface PortfolioListProps {
   onDelete?: (portfolioId: string) => void;
   onAddTransaction?: (portfolio: Portfolio) => void;
   onViewTransactions?: (portfolio: Portfolio) => void;
+  onUpdateNav?: (portfolio: Portfolio) => void;
 }
 
-export function PortfolioList({ portfolios, onEdit, onDelete, onAddTransaction, onViewTransactions }: PortfolioListProps) {
+export function PortfolioList({ portfolios, onEdit, onDelete, onAddTransaction, onViewTransactions, onUpdateNav }: PortfolioListProps) {
   if (portfolios.length === 0) {
     return (
       <div className="text-center py-12">
@@ -104,6 +105,12 @@ export function PortfolioList({ portfolios, onEdit, onDelete, onAddTransaction, 
                     {formatPercentage(portfolio.returnPercentage)}
                   </span>
                 </div>
+                {/* Total Units for Mutual Funds */}
+                {portfolio.investmentType === 'mutual_fund' && portfolio.totalUnits !== undefined && portfolio.totalUnits > 0 && (
+                  <div className="mt-2 text-sm text-gray-600">
+                    Total Units: <span className="font-semibold text-gray-900">{portfolio.totalUnits.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}</span>
+                  </div>
+                )}
               </div>
 
               {/* Stats */}
@@ -128,31 +135,53 @@ export function PortfolioList({ portfolios, onEdit, onDelete, onAddTransaction, 
               )}
 
               {/* Action Buttons */}
-              {(onAddTransaction || onViewTransactions) && (
-                <div className="flex gap-2 pt-3 border-t border-gray-100">
-                  {onAddTransaction && (
+              {(onAddTransaction || onViewTransactions || onUpdateNav) && (
+                <div className="space-y-2 pt-3 border-t border-gray-100">
+                  <div className="flex gap-2">
+                    {onAddTransaction && (
+                      <button
+                        onClick={() => onAddTransaction(portfolio)}
+                        className="flex-1 px-3 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white text-sm font-medium rounded-lg hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition shadow-sm"
+                      >
+                        <span className="flex items-center justify-center">
+                          <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          Add Transaction
+                        </span>
+                      </button>
+                    )}
+                    {onViewTransactions && portfolio.transactionCount > 0 && (
+                      <button
+                        onClick={() => onViewTransactions(portfolio)}
+                        className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition"
+                      >
+                        <span className="flex items-center justify-center">
+                          <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                          </svg>
+                          View History
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Update NAV button for mutual funds */}
+                  {onUpdateNav && portfolio.investmentType === 'mutual_fund' && (
                     <button
-                      onClick={() => onAddTransaction(portfolio)}
-                      className="flex-1 px-3 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white text-sm font-medium rounded-lg hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition shadow-sm"
+                      onClick={() => onUpdateNav(portfolio)}
+                      className="w-full px-3 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-purple-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition shadow-sm"
                     >
                       <span className="flex items-center justify-center">
                         <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                         </svg>
-                        Add Transaction
-                      </span>
-                    </button>
-                  )}
-                  {onViewTransactions && portfolio.transactionCount > 0 && (
-                    <button
-                      onClick={() => onViewTransactions(portfolio)}
-                      className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition"
-                    >
-                      <span className="flex items-center justify-center">
-                        <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                        View History
+                        Update NAV
+                        {portfolio.currentNavPerUnit && portfolio.currentNavPerUnit > 0 && (
+                          <span className="ml-1.5 text-xs opacity-90">
+                            (฿{portfolio.currentNavPerUnit.toFixed(4)})
+                          </span>
+                        )}
                       </span>
                     </button>
                   )}

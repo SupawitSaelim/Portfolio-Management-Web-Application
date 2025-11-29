@@ -20,6 +20,9 @@ export interface Portfolio {
   updatedAt: Date;
   description?: string;
   color?: string;
+  // Mutual fund specific fields
+  currentNavPerUnit?: number;
+  totalUnits?: number;
 }
 
 export interface CreatePortfolioInput {

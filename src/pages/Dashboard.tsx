@@ -7,10 +7,12 @@ import { PortfolioList } from '../components/PortfolioList';
 import { CreatePortfolioModal } from '../components/CreatePortfolioModal';
 import { AddTransactionModal } from '../components/AddTransactionModal';
 import { ViewTransactionsModal } from '../components/ViewTransactionsModal';
+import { UpdateNavModal } from '../components/UpdateNavModal';
 import { PortfolioStats } from '../components/PortfolioStats';
 import { PortfolioDistributionChart } from '../components/PortfolioDistributionChart';
 import { PerformanceChart } from '../components/PerformanceChart';
 import { transactionService } from '../services/transaction';
+import { portfolioService } from '../services/portfolio';
 import type { Portfolio } from '../types/portfolio';
 import type { Transaction } from '../types/transaction';
 
@@ -21,6 +23,7 @@ export function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isViewTransactionsModalOpen, setIsViewTransactionsModalOpen] = useState(false);
+  const [isNavModalOpen, setIsNavModalOpen] = useState(false);
   const [selectedPortfolio, setSelectedPortfolio] = useState<Portfolio | null>(null);
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const { createTransaction } = useTransaction(selectedPortfolio?.id);
@@ -55,6 +58,24 @@ export function Dashboard() {
   const handleViewTransactions = (portfolio: Portfolio) => {
     setSelectedPortfolio(portfolio);
     setIsViewTransactionsModalOpen(true);
+  };
+
+  const handleUpdateNav = (portfolio: Portfolio) => {
+    setSelectedPortfolio(portfolio);
+    setIsNavModalOpen(true);
+  };
+
+  const handleNavUpdate = async (navPerUnit: number) => {
+    if (!selectedPortfolio) return;
+    try {
+      await portfolioService.updateNav(selectedPortfolio.id, navPerUnit);
+      // Trigger recalculation of portfolio stats
+      await transactionService.updatePortfolioStats(selectedPortfolio.id);
+      await refreshPortfolios();
+    } catch (error) {
+      console.error('Failed to update NAV:', error);
+      throw error;
+    }
   };
 
   const handleTransactionCreated = async () => {
@@ -149,6 +170,7 @@ export function Dashboard() {
               onDelete={deletePortfolio}
               onAddTransaction={handleAddTransaction}
               onViewTransactions={handleViewTransactions}
+              onUpdateNav={handleUpdateNav}
             />
           )}
 
@@ -184,6 +206,17 @@ export function Dashboard() {
               refreshPortfolios();
               fetchAllTransactions();
             }}
+            portfolio={selectedPortfolio}
+          />
+
+          {/* Update NAV Modal */}
+          <UpdateNavModal
+            isOpen={isNavModalOpen}
+            onClose={() => {
+              setIsNavModalOpen(false);
+              setSelectedPortfolio(null);
+            }}
+            onUpdate={handleNavUpdate}
             portfolio={selectedPortfolio}
           />
         </div>

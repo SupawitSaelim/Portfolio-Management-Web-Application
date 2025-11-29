@@ -237,14 +237,58 @@ export const transactionService = {
     }
   },
 
+  // Calculate total units for mutual fund portfolios
+  async getMutualFundUnits(portfolioId: string): Promise<number> {
+    try {
+      const transactions = await this.getPortfolioTransactions(portfolioId);
+      let totalUnits = 0;
+
+      transactions.forEach((t) => {
+        if (t.mutualFundDetails) {
+          if (t.type === 'deposit') {
+            totalUnits += t.mutualFundDetails.unitsPurchased;
+          } else {
+            totalUnits -= t.mutualFundDetails.unitsPurchased;
+          }
+        }
+      });
+
+      return totalUnits;
+    } catch (error: any) {
+      console.error('❌ Error calculating units:', error.message);
+      throw error;
+    }
+  },
+
   // Update portfolio statistics after transaction changes
   async updatePortfolioStats(portfolioId: string): Promise<void> {
     try {
       const stats = await this.getPortfolioStats(portfolioId);
+      
+      // Get portfolio to check type and current NAV
+      const portfolio = await portfolioService.getPortfolio(portfolioId);
+      if (!portfolio) {
+        throw new Error('Portfolio not found');
+      }
 
-      // For savings type, current value equals net invested
-      // In future, we can add interest calculation here
-      const currentValue = stats.netInvested;
+      let currentValue: number;
+      let totalUnits = 0;
+
+      // For mutual funds, calculate value based on units × NAV
+      if (portfolio.investmentType === 'mutual_fund') {
+        totalUnits = await this.getMutualFundUnits(portfolioId);
+        
+        if (portfolio.currentNavPerUnit && portfolio.currentNavPerUnit > 0) {
+          currentValue = totalUnits * portfolio.currentNavPerUnit;
+        } else {
+          // If no NAV set, use net invested as fallback
+          currentValue = stats.netInvested;
+        }
+      } else {
+        // For other types, current value equals net invested
+        currentValue = stats.netInvested;
+      }
+
       const totalReturn = currentValue - stats.netInvested;
       const returnPercentage = stats.netInvested > 0 
         ? (totalReturn / stats.netInvested) * 100 
@@ -256,6 +300,7 @@ export const transactionService = {
         totalReturn,
         returnPercentage,
         transactionCount: stats.transactionCount,
+        totalUnits,
       });
 
       console.log('✅ Portfolio stats updated');
