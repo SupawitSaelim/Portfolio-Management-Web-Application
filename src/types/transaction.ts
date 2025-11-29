@@ -18,6 +18,22 @@ export interface StockDetails {
   purchaseValueTHB: number;
 }
 
+// PVD specific details
+export interface PVDDetails {
+  year: number;
+  period: number;
+  month: string;
+  employeeContribution: number;
+  employerContribution: number;
+}
+
+// Cooperative specific details
+export interface CooperativeDetails {
+  year: number;
+  period: number;
+  month: string;
+}
+
 export interface Transaction {
   id: string;
   userId: string;
@@ -30,6 +46,10 @@ export interface Transaction {
   mutualFundDetails?: MutualFundDetails;
   // Stock specific fields (optional, only for stock type)
   stockDetails?: StockDetails;
+  // PVD specific fields (optional, only for pvd type)
+  pvdDetails?: PVDDetails;
+  // Cooperative specific fields (optional, only for cooperative type)
+  cooperativeDetails?: CooperativeDetails;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,6 +64,10 @@ export interface CreateTransactionInput {
   mutualFundDetails?: MutualFundDetails;
   // Stock specific fields (optional)
   stockDetails?: StockDetails;
+  // PVD specific fields (optional)
+  pvdDetails?: PVDDetails;
+  // Cooperative specific fields (optional)
+  cooperativeDetails?: CooperativeDetails;
 }
 
 export interface UpdateTransactionInput {
@@ -53,6 +77,8 @@ export interface UpdateTransactionInput {
   notes?: string;
   mutualFundDetails?: MutualFundDetails;
   stockDetails?: StockDetails;
+  pvdDetails?: PVDDetails;
+  cooperativeDetails?: CooperativeDetails;
 }
 
 export interface TransactionStats {

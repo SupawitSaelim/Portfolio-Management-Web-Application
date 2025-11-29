@@ -81,6 +81,16 @@ export function TransactionList({ transactions, onDelete, onEdit, deletingId }: 
                       #{transaction.stockDetails.installmentNo}
                     </span>
                   )}
+                  {transaction.pvdDetails && (
+                    <span className="ml-2 text-xs font-normal text-gray-600">
+                      Period {transaction.pvdDetails.period}
+                    </span>
+                  )}
+                  {transaction.cooperativeDetails && (
+                    <span className="ml-2 text-xs font-normal text-gray-600">
+                      Period {transaction.cooperativeDetails.period}
+                    </span>
+                  )}
                 </p>
                 <p className={`text-base font-bold ${
                   transaction.type === 'deposit' ? 'text-green-700' : 'text-red-700'
@@ -115,12 +125,34 @@ export function TransactionList({ transactions, onDelete, onEdit, deletingId }: 
                   </p>
                 </div>
               )}
+
+              {/* PVD Details */}
+              {transaction.pvdDetails && (
+                <div className="mt-1">
+                  <p className="text-xs font-medium text-gray-700">
+                    {transaction.pvdDetails.month} {transaction.pvdDetails.year}
+                  </p>
+                  <div className="flex gap-3 text-xs text-gray-500">
+                    <span className="text-blue-600">Employee: ฿{transaction.pvdDetails.employeeContribution.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                    <span className="text-green-600">Employer: ฿{transaction.pvdDetails.employerContribution.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Cooperative Details */}
+              {transaction.cooperativeDetails && (
+                <div className="mt-1">
+                  <p className="text-xs font-medium text-gray-700">
+                    {transaction.cooperativeDetails.month} {transaction.cooperativeDetails.year}
+                  </p>
+                </div>
+              )}
               
               <div className="flex items-center justify-between mt-1">
                 <p className="text-xs text-gray-500">
                   {formatDate(transaction.date)}
                 </p>
-                {transaction.notes && !transaction.mutualFundDetails && !transaction.stockDetails && (
+                {transaction.notes && !transaction.mutualFundDetails && !transaction.stockDetails && !transaction.pvdDetails && !transaction.cooperativeDetails && (
                   <p className="text-xs text-gray-500 truncate ml-2 max-w-[150px]">
                     {transaction.notes}
                   </p>

@@ -82,8 +82,11 @@ export function ViewTransactionsModal({ isOpen, onClose, portfolio }: ViewTransa
       const search = searchText.toLowerCase();
       const matchesNotes = transaction.notes?.toLowerCase().includes(search);
       const matchesFundName = transaction.mutualFundDetails?.fundName?.toLowerCase().includes(search);
+      const matchesStockName = transaction.stockDetails?.stockName?.toLowerCase().includes(search);
+      const matchesPvdMonth = transaction.pvdDetails?.month?.toLowerCase().includes(search);
+      const matchesCoopMonth = transaction.cooperativeDetails?.month?.toLowerCase().includes(search);
       const matchesAmount = transaction.amount.toString().includes(search);
-      if (!matchesNotes && !matchesFundName && !matchesAmount) {
+      if (!matchesNotes && !matchesFundName && !matchesStockName && !matchesPvdMonth && !matchesCoopMonth && !matchesAmount) {
         return false;
       }
     }

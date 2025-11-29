@@ -29,6 +29,12 @@ export function AddTransactionModal({ isOpen, onClose, onCreate, portfolioId, po
     stockUnits: string;
     pricePerUnitUSD: string;
     exchangeRate: string;
+    // PVD fields
+    pvdYear: string;
+    pvdPeriod: string;
+    pvdMonth: string;
+    employeeContribution: string;
+    employerContribution: string;
   }>({
     type: 'deposit',
     amount: '',
@@ -43,6 +49,11 @@ export function AddTransactionModal({ isOpen, onClose, onCreate, portfolioId, po
     stockUnits: '',
     pricePerUnitUSD: '',
     exchangeRate: '',
+    pvdYear: new Date().getFullYear().toString(),
+    pvdPeriod: '',
+    pvdMonth: '',
+    employeeContribution: '',
+    employerContribution: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,6 +114,28 @@ export function AddTransactionModal({ isOpen, onClose, onCreate, portfolioId, po
     const digits = value.replace(/\D/g, '');
     if (!digits) return '';
     return parseInt(digits, 10).toLocaleString('en-US');
+  };
+
+  const handlePVDContributionChange = (field: 'employeeContribution' | 'employerContribution', value: string) => {
+    // Remove all non-digit characters except decimal point
+    const cleanValue = value.replace(/[^\d.]/g, '');
+    // Allow only one decimal point
+    const parts = cleanValue.split('.');
+    if (parts.length > 2) return;
+    
+    // Format the number with commas for display
+    let formattedValue = cleanValue;
+    if (cleanValue && !cleanValue.endsWith('.')) {
+      const num = parseFloat(cleanValue);
+      if (!isNaN(num)) {
+        formattedValue = num.toLocaleString('en-US', { 
+          minimumFractionDigits: parts.length > 1 ? parts[1].length : 0,
+          maximumFractionDigits: parts.length > 1 ? parts[1].length : 0
+        });
+      }
+    }
+    
+    setFormData({ ...formData, [field]: formattedValue });
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,6 +203,22 @@ export function AddTransactionModal({ isOpen, onClose, onCreate, portfolioId, po
       
       amountValue = units * priceUSD * exchangeRate;
     } 
+    // For PVD, calculate amount from employee + employer contributions
+    else if (investmentType === 'pvd') {
+      const employee = parseFloat(formData.employeeContribution.replace(/,/g, ''));
+      const employer = parseFloat(formData.employerContribution.replace(/,/g, ''));
+      
+      if (!employee || employee <= 0) {
+        setError('Employee contribution must be greater than 0');
+        return;
+      }
+      if (!employer || employer <= 0) {
+        setError('Employer contribution must be greater than 0');
+        return;
+      }
+      
+      amountValue = employee + employer;
+    }
     else {
       amountValue = parseFloat(formData.amount.replace(/,/g, ''));
       if (!amountValue || amountValue <= 0) {
@@ -215,6 +264,50 @@ export function AddTransactionModal({ isOpen, onClose, onCreate, portfolioId, po
         };
       }
 
+      // Add PVD details if applicable
+      if (investmentType === 'pvd') {
+        const transactionDate = new Date(formData.date);
+        const year = transactionDate.getFullYear();
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const month = monthNames[transactionDate.getMonth()];
+        
+        // Calculate period based on existing transactions in this year
+        const allTransactions = await transactionService.getPortfolioTransactions(portfolioId);
+        const yearTransactions = allTransactions.filter(t => 
+          t.pvdDetails && t.pvdDetails.year === year
+        );
+        const period = yearTransactions.length + 1;
+        
+        input.pvdDetails = {
+          year: year,
+          period: period,
+          month: month,
+          employeeContribution: parseFloat(formData.employeeContribution.replace(/,/g, '')),
+          employerContribution: parseFloat(formData.employerContribution.replace(/,/g, '')),
+        };
+      }
+
+      // Add Cooperative details if applicable
+      if (investmentType === 'cooperative') {
+        const transactionDate = new Date(formData.date);
+        const year = transactionDate.getFullYear();
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const month = monthNames[transactionDate.getMonth()];
+        
+        // Calculate period based on existing transactions in this year
+        const allTransactions = await transactionService.getPortfolioTransactions(portfolioId);
+        const yearTransactions = allTransactions.filter(t => 
+          t.cooperativeDetails && t.cooperativeDetails.year === year
+        );
+        const period = yearTransactions.length + 1;
+        
+        input.cooperativeDetails = {
+          year: year,
+          period: period,
+          month: month,
+        };
+      }
+
       await onCreate(input);
       
       // Reset form
@@ -232,6 +325,11 @@ export function AddTransactionModal({ isOpen, onClose, onCreate, portfolioId, po
         stockUnits: '',
         pricePerUnitUSD: '',
         exchangeRate: '',
+        pvdYear: new Date().getFullYear().toString(),
+        pvdPeriod: '',
+        pvdMonth: '',
+        employeeContribution: '',
+        employerContribution: '',
       });
       onClose();
     } catch (err: any) {
@@ -571,8 +669,77 @@ export function AddTransactionModal({ isOpen, onClose, onCreate, portfolioId, po
               </>
             )}
 
-            {/* Amount (only for non-mutual fund and non-stock) */}
-            {investmentType !== 'mutual_fund' && investmentType !== 'stock' && (
+            {/* PVD Fields */}
+            {investmentType === 'pvd' && (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="employeeContribution" className="block text-sm font-medium text-gray-700 mb-1">
+                      Employee Contribution *
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">฿</span>
+                      <input
+                        id="employeeContribution"
+                        type="text"
+                        required
+                        value={formData.employeeContribution}
+                        onChange={(e) => handlePVDContributionChange('employeeContribution', e.target.value)}
+                        className="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="employerContribution" className="block text-sm font-medium text-gray-700 mb-1">
+                      Employer Contribution *
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">฿</span>
+                      <input
+                        id="employerContribution"
+                        type="text"
+                        required
+                        value={formData.employerContribution}
+                        onChange={(e) => handlePVDContributionChange('employerContribution', e.target.value)}
+                        className="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Calculated Total Contribution */}
+                {formData.employeeContribution && formData.employerContribution && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Employee:</span>
+                        <span className="text-sm font-semibold text-gray-900">
+                          ฿{parseFloat(formData.employeeContribution.replace(/,/g, '')).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Employer:</span>
+                        <span className="text-sm font-semibold text-gray-900">
+                          ฿{parseFloat(formData.employerContribution.replace(/,/g, '')).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t border-green-300">
+                        <span className="text-sm font-medium text-gray-700">Total Contribution:</span>
+                        <span className="text-lg font-bold text-green-700">
+                          ฿{(parseFloat(formData.employeeContribution.replace(/,/g, '')) + parseFloat(formData.employerContribution.replace(/,/g, ''))).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Amount (only for non-mutual fund and non-stock and non-pvd) */}
+            {investmentType !== 'mutual_fund' && investmentType !== 'stock' && investmentType !== 'pvd' && (
             <div>
               <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
                 Amount (THB) *

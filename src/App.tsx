@@ -4,6 +4,8 @@ import { Register } from './pages/Register'
 import { Dashboard } from './pages/Dashboard'
 import { ForgotPassword } from './pages/ForgotPassword'
 import { Settings } from './pages/Settings'
+import { PVDDetail } from './pages/PVDDetail'
+import { CooperativeDetail } from './pages/CooperativeDetail'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 function App() {
@@ -27,6 +29,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Settings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pvd/:portfolioId"
+          element={
+            <ProtectedRoute>
+              <PVDDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cooperative/:portfolioId"
+          element={
+            <ProtectedRoute>
+              <CooperativeDetail />
             </ProtectedRoute>
           }
         />

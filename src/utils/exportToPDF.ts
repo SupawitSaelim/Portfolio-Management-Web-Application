@@ -416,13 +416,26 @@ export async function generateSinglePortfolioReport(
 
     const transactionData = transactions
       .sort((a, b) => b.date.getTime() - a.date.getTime())
-      .map((t) => [
-        format(t.date, 'yyyy-MM-dd'),
-        t.type === 'deposit' ? 'Deposit' : 'Withdrawal',
-        `THB ${Math.abs(t.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
-        t.mutualFundDetails?.fundName || t.stockDetails?.stockName || '-',
-        t.notes || '-',
-      ]);
+      .map((t) => {
+        let details = '-';
+        if (t.mutualFundDetails) {
+          details = t.mutualFundDetails.fundName;
+        } else if (t.stockDetails) {
+          details = t.stockDetails.stockName;
+        } else if (t.pvdDetails) {
+          details = `${t.pvdDetails.month} ${t.pvdDetails.year} (P${t.pvdDetails.period})`;
+        } else if (t.cooperativeDetails) {
+          details = `${t.cooperativeDetails.month} ${t.cooperativeDetails.year} (P${t.cooperativeDetails.period})`;
+        }
+        
+        return [
+          format(t.date, 'yyyy-MM-dd'),
+          t.type === 'deposit' ? 'Deposit' : 'Withdrawal',
+          `THB ${Math.abs(t.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+          details,
+          t.notes || '-',
+        ];
+      });
 
     autoTable(doc, {
       startY: yPosition,
