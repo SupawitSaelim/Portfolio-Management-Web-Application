@@ -4,7 +4,7 @@ import { useToast } from '../contexts/ToastContext';
 import { ToastContainer } from '../components/ToastContainer';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../services/firebase';
-import { updateProfile, updatePassword, updateEmail, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
+import { updateProfile, updatePassword, updateEmail, EmailAuthProvider, reauthenticateWithCredential, verifyBeforeUpdateEmail, onAuthStateChanged } from 'firebase/auth';
 import { doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { storageService } from '../services/storage';
@@ -32,6 +32,7 @@ export function Settings() {
   // Email state
   const [newEmail, setNewEmail] = useState('');
   const [emailPassword, setEmailPassword] = useState('');
+  const [hasProcessedEmailChange, setHasProcessedEmailChange] = useState(false);
 
   // 2FA state
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
@@ -52,7 +53,40 @@ export function Settings() {
         otpService.is2FAEnabled(auth.currentUser.uid).then(setIs2FAEnabled);
       }
     }
-  }, [appUser]);
+
+    // Listen for email changes (when user verifies new email)
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user && appUser && user.email !== appUser.email && !hasProcessedEmailChange) {
+        // Email has been verified and changed, update Firestore
+        try {
+          await updateDoc(doc(db, 'users', user.uid), {
+            email: user.email,
+            updatedAt: Timestamp.now(),
+          });
+          
+          // Mark as processed to prevent duplicate triggers
+          setHasProcessedEmailChange(true);
+          
+          // Log out user for security
+          showToast('Email updated successfully. Logging out...', 'success');
+          setTimeout(async () => {
+            try {
+              await logout();
+              await auth.signOut();
+            } catch (error) {
+              console.error('Error during logout:', error);
+            } finally {
+              window.location.href = '/login';
+            }
+          }, 2000);
+        } catch (error) {
+          console.error('Error updating email in Firestore:', error);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [appUser, logout, showToast, hasProcessedEmailChange]);
 
   const handlePhotoSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -292,30 +326,35 @@ export function Settings() {
 
     try {
       setIsUpdatingEmail(true);
+      setHasProcessedEmailChange(false); // Reset flag when initiating email change
 
-      if (auth.currentUser) {
-        await updateEmail(auth.currentUser, newEmail);
+      if (auth.currentUser?.email) {
+        // Re-authenticate user with current password
+        const credential = EmailAuthProvider.credential(
+          auth.currentUser.email,
+          emailPassword
+        );
+        await reauthenticateWithCredential(auth.currentUser, credential);
 
-        // Update Firestore
-        if (appUser?.uid) {
-          await updateDoc(doc(db, 'users', appUser.uid), {
-            email: newEmail,
-            updatedAt: Timestamp.now(),
-          });
-        }
+        // Send verification email to new email address
+        await verifyBeforeUpdateEmail(auth.currentUser, newEmail);
+
+        setNewEmail('');
+        setEmailPassword('');
+        showToast('Verification email sent! Please check your new email inbox and click the link to complete the change.', 'success');
       }
-
-      setNewEmail('');
-      setEmailPassword('');
-      showToast('Email updated successfully', 'success');
     } catch (error: any) {
       console.error('Error updating email:', error);
-      if (error.code === 'auth/requires-recent-login') {
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        showToast('Password is incorrect', 'error');
+      } else if (error.code === 'auth/requires-recent-login') {
         showToast('Please log out and log in again to change your email', 'error');
       } else if (error.code === 'auth/email-already-in-use') {
         showToast('This email is already in use', 'error');
+      } else if (error.code === 'auth/invalid-email') {
+        showToast('Invalid email address', 'error');
       } else {
-        showToast('Failed to update email', 'error');
+        showToast('Failed to send verification email', 'error');
       }
     } finally {
       setIsUpdatingEmail(false);
@@ -663,7 +702,7 @@ export function Settings() {
                       type="email"
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 text-gray-900 dark:text-white"
                       placeholder="Enter new email"
                     />
                   </div>
@@ -675,7 +714,7 @@ export function Settings() {
                       type="password"
                       value={emailPassword}
                       onChange={(e) => setEmailPassword(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 text-gray-900 dark:text-white"
                       placeholder="Enter your password"
                     />
                   </div>
