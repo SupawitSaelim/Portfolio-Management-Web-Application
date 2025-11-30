@@ -87,8 +87,7 @@ export const transactionService = {
     try {
       const q = query(
         collection(db, 'transactions'),
-        where('portfolioId', '==', portfolioId),
-        orderBy('date', 'desc')
+        where('portfolioId', '==', portfolioId)
       );
 
       const querySnapshot = await getDocs(q);
@@ -111,6 +110,12 @@ export const transactionService = {
           createdAt: data.createdAt?.toDate(),
           updatedAt: data.updatedAt?.toDate(),
         });
+      });
+
+      // Sort by date in descending order (most recent first)
+      transactions.sort((a, b) => {
+        if (!a.date || !b.date) return 0;
+        return b.date.getTime() - a.date.getTime();
       });
 
       console.log(`✅ Fetched ${transactions.length} transactions`);
