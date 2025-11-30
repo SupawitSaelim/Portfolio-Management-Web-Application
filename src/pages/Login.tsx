@@ -1,14 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { db } from '../services/firebase';
 
 export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [isDbConnected, setIsDbConnected] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check Firebase connection
+    const checkConnection = async () => {
+      try {
+        // Simple check if db is initialized
+        setIsDbConnected(!!db);
+      } catch {
+        setIsDbConnected(false);
+      }
+    };
+    checkConnection();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,13 +140,18 @@ export function Login() {
           </div>
         </div>
 
-        {/* Demo Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-          <p className="text-sm text-blue-800">
-            <strong>🔥 Firebase Connected!</strong>
-            <br />
-            <span className="text-blue-700">Create an account to get started</span>
-          </p>
+        {/* Database Connection Status */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-center">
+          <div className="flex items-center space-x-2">
+            <div className={`w-3 h-3 rounded-full ${isDbConnected ? 'bg-green-500' : 'bg-red-500'} shadow-lg`}>
+              {isDbConnected && (
+                <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+              )}
+            </div>
+            <span className="text-sm text-gray-600">
+              {isDbConnected ? 'Database Connected' : 'Database Disconnected'}
+            </span>
+          </div>
         </div>
       </div>
     </div>

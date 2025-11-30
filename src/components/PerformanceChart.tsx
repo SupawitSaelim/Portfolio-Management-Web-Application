@@ -29,16 +29,16 @@ export function PerformanceChart({ portfolios, allTransactions }: PerformanceCha
     });
 
     const dataPoints: DataPoint[] = [];
-    let runningBalance = 0;
+    let runningInvested = 0;
 
     sortedTransactions.forEach((transaction) => {
       const transDate = transaction.date instanceof Date ? transaction.date : new Date(transaction.date);
       
-      // Update running balance
+      // Update running invested amount (net deposits - withdrawals)
       if (transaction.type === 'deposit') {
-        runningBalance += transaction.amount;
+        runningInvested += transaction.amount;
       } else {
-        runningBalance -= transaction.amount;
+        runningInvested -= transaction.amount;
       }
 
       const dateStr = format(transDate, 'yyyy-MM-dd');
@@ -47,15 +47,15 @@ export function PerformanceChart({ portfolios, allTransactions }: PerformanceCha
       const existingPoint = dataPoints.find(p => p.date === dateStr);
       
       if (existingPoint) {
-        // Update the existing point
-        existingPoint.value = runningBalance;
-        existingPoint.invested = runningBalance;
+        // Update the existing point - at transaction time, value equals invested
+        existingPoint.value = runningInvested;
+        existingPoint.invested = runningInvested;
       } else {
-        // Add new data point
+        // Add new data point - at transaction time, value equals invested
         dataPoints.push({
           date: dateStr,
-          value: runningBalance,
-          invested: runningBalance,
+          value: runningInvested,
+          invested: runningInvested,
         });
       }
     });
@@ -63,17 +63,20 @@ export function PerformanceChart({ portfolios, allTransactions }: PerformanceCha
     // Add current value as the last point if we have portfolios
     if (portfolios.length > 0 && dataPoints.length > 0) {
       const totalCurrentValue = portfolios.reduce((sum, p) => sum + p.currentValue, 0);
+      const totalInvested = portfolios.reduce((sum, p) => sum + p.totalInvested, 0);
       const today = format(new Date(), 'yyyy-MM-dd');
       const lastPoint = dataPoints[dataPoints.length - 1];
       
-      if (lastPoint.date !== today) {
+      // Update last point or add today's point with actual current values
+      if (lastPoint.date === today) {
+        lastPoint.value = totalCurrentValue;
+        lastPoint.invested = totalInvested;
+      } else {
         dataPoints.push({
           date: today,
           value: totalCurrentValue,
-          invested: lastPoint.invested,
+          invested: totalInvested,
         });
-      } else {
-        lastPoint.value = totalCurrentValue;
       }
     }
 

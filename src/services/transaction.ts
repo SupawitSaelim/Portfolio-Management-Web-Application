@@ -43,6 +43,16 @@ export const transactionService = {
         transactionData.stockDetails = input.stockDetails;
       }
 
+      // Add PVD details if provided
+      if (input.pvdDetails) {
+        transactionData.pvdDetails = input.pvdDetails;
+      }
+
+      // Add Cooperative details if provided
+      if (input.cooperativeDetails) {
+        transactionData.cooperativeDetails = input.cooperativeDetails;
+      }
+
       await setDoc(transactionRef, transactionData);
 
       const transaction: Transaction = {
@@ -55,6 +65,8 @@ export const transactionService = {
         notes: input.notes,
         mutualFundDetails: input.mutualFundDetails,
         stockDetails: input.stockDetails,
+        pvdDetails: input.pvdDetails,
+        cooperativeDetails: input.cooperativeDetails,
         createdAt: now.toDate(),
         updatedAt: now.toDate(),
       };
@@ -94,6 +106,8 @@ export const transactionService = {
           notes: data.notes,
           mutualFundDetails: data.mutualFundDetails,
           stockDetails: data.stockDetails,
+          pvdDetails: data.pvdDetails,
+          cooperativeDetails: data.cooperativeDetails,
           createdAt: data.createdAt?.toDate(),
           updatedAt: data.updatedAt?.toDate(),
         });
@@ -131,6 +145,8 @@ export const transactionService = {
           notes: data.notes,
           mutualFundDetails: data.mutualFundDetails,
           stockDetails: data.stockDetails,
+          pvdDetails: data.pvdDetails,
+          cooperativeDetails: data.cooperativeDetails,
           createdAt: data.createdAt?.toDate(),
           updatedAt: data.updatedAt?.toDate(),
         });
@@ -163,6 +179,9 @@ export const transactionService = {
         date: data.date?.toDate(),
         notes: data.notes,
         mutualFundDetails: data.mutualFundDetails,
+        stockDetails: data.stockDetails,
+        pvdDetails: data.pvdDetails,
+        cooperativeDetails: data.cooperativeDetails,
         createdAt: data.createdAt?.toDate(),
         updatedAt: data.updatedAt?.toDate(),
       };
