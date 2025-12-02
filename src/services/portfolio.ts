@@ -48,7 +48,9 @@ export const portfolioService = {
         updatedAt: now.toDate(),
       };
 
-      console.log('✅ Portfolio created:', portfolio.name);
+      if (import.meta.env.DEV) {
+        console.log('✅ Portfolio created:', portfolio.name);
+      }
       return portfolio;
     } catch (error: any) {
       console.error('❌ Error creating portfolio:', error.message);
@@ -92,7 +94,9 @@ export const portfolioService = {
         });
       });
 
-      console.log(`✅ Fetched ${portfolios.length} portfolios`);
+      if (import.meta.env.DEV) {
+        console.log(`✅ Fetched ${portfolios.length} portfolios`);
+      }
       return portfolios;
     } catch (error: any) {
       console.error('❌ Error fetching portfolios:', error.message);

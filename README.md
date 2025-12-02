@@ -1,289 +1,268 @@
 # Portfolio Management Web Application 💼
 
-A modern, responsive web application for managing personal investment portfolios built with React and Firebase. Track multiple investment types including Cooperative savings, PVD (Provident Fund), Mutual Funds, Stocks, and Savings accounts.
+A modern, secure web application for managing personal investment portfolios built with React, TypeScript, and Firebase. Track multiple investment types including Cooperative savings, PVD (Provident Fund), Mutual Funds, Stocks, and Savings accounts with real-time analytics and reporting.
 
-[![Deployed on GitHub Pages](https://img.shields.io/badge/Deployed-GitHub%20Pages-blue)](https://supawitsaelimscb.github.io/Portfolio-Management-Web-Application)
-[![Built with React](https://img.shields.io/badge/Built%20with-React-61DAFB?logo=react)](https://react.dev)
-[![Database Firebase](https://img.shields.io/badge/Database-Firebase-FFCA28?logo=firebase)](https://firebase.google.com)
+[![Built with React](https://img.shields.io/badge/Built%20with-React%2018-61DAFB?logo=react)](https://react.dev)
+[![Database Firebase](https://img.shields.io/badge/Database-Firestore-FFCA28?logo=firebase)](https://firebase.google.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.0-646CFF?logo=vite)](https://vitejs.dev)
 
 ---
 
 ## 🌟 Features
 
-### Core Features
-- 📊 **Comprehensive Dashboard** - Real-time portfolio overview with key metrics
-- 💰 **Multiple Investment Types** - Track Cooperative, PVD, Mutual Funds, Stocks, and Savings
-- 📈 **Advanced Analytics** - Performance tracking, ROI calculations, and trend analysis
-- 📱 **Responsive Design** - Seamless experience on desktop, tablet, and mobile
-- 🔐 **Secure Authentication** - Firebase-powered user authentication
-- ☁️ **Cloud Sync** - Real-time data synchronization across devices
-- 🌙 **Dark Mode** - Support for light and dark themes
-- 🌍 **Multi-language** - English and Thai language support
-- 📤 **Import/Export** - Bulk transaction import and data export capabilities
+### ✅ Core Features (Fully Implemented)
+- 📊 **Real-Time Dashboard** - Portfolio overview with performance charts
+- 💰 **5 Investment Types** - Cooperative, PVD, Mutual Funds, Stocks, and Savings
+- 📈 **Performance Analytics** - ROI tracking, return calculations, visual charts
+- 📱 **Fully Responsive** - Works perfectly on desktop, tablet, and mobile
+- 🔐 **Secure Auth + 2FA** - Email/password login with optional OTP verification
+- ☁️ **Cloud Sync** - Real-time Firestore database synchronization
+- 🌙 **Dark Mode** - Complete dark/light theme support
+- 👤 **Profile Management** - Update profile, change password/email, profile photos
+- 📤 **Data Export** - PDF reports and CSV exports
+- 🔒 **Enterprise Security** - Input validation, rate limiting, XSS protection
 
 ### Investment Type Features
 
-#### 🏦 Cooperative Account
-- Monthly contribution tracking
-- Running total calculation
-- Historical contribution view
+#### 🏛️ Cooperative
+- Period and dividend tracking
+- Detailed transaction history
+- CSV export by year
+- View dedicated Cooperative detail page
 
 #### 💼 PVD (Provident Fund)
 - Employee and employer contribution tracking
-- Automatic percentage calculation
-- Cumulative value monitoring
+- Yearly/monthly breakdown
+- Period-based reporting
+- CSV export functionality
+- Dedicated PVD detail page
 
 #### 📊 Mutual Funds
-- Multiple fund support
-- Unit cost averaging
-- Current valuation vs purchase value
-- Profit/loss calculation
+- NAV (Net Asset Value) tracking
+- Units purchased calculation
+- Current value vs invested
+- Update NAV functionality
+- Performance monitoring
 
 #### 📈 Stock Investment
-- Multi-currency support (USD/THB)
+- Multi-currency (USD/THB)
+- Yahoo Finance API integration for real-time prices
 - Exchange rate tracking
-- Average cost per share
-- Portfolio performance metrics
+- Average cost calculation
+- Automatic price updates
 
-#### 💵 Savings Account
-- Simple deposit tracking
-- Balance history
-- Running balance calculation
+#### 💰 Savings
+- Simple deposit/withdrawal tracking
+- Balance monitoring
+- Transaction notes
 
 ---
 
-## 🚀 Live Demo
+## 🚀 Quick Start
 
-**Visit the live application:** [https://supawitsaelimscb.github.io/Portfolio-Management-Web-Application](https://supawitsaelimscb.github.io/Portfolio-Management-Web-Application)
+**Want to get started fast?** Check out **[QUICK_START.md](./QUICK_START.md)** for a 5-minute setup guide!
+
+### Prerequisites
+- Node.js >= 18.0.0
+- Firebase account (free tier works fine!)
+- EmailJS account (optional, for 2FA/OTP)
+
+### Installation
+
+```bash
+# Clone and install
+git clone https://github.com/supawitsaelimscb/Portfolio-Management-Web-Application.git
+cd Portfolio-Management-Web-Application
+npm install
+
+# Copy and configure environment variables
+cp .env.example .env
+# Edit .env with your Firebase credentials
+
+# Run development server
+npm run dev
+```
+
+Visit http://localhost:5173 and start tracking your investments!
 
 ---
 
 ## 📋 Documentation
 
-Comprehensive documentation is available in the `/docs` folder:
-
 | Document | Description |
 |----------|-------------|
-| **[Requirements](docs/requirements.md)** | Complete functional and non-functional requirements |
-| **[Technical Architecture](docs/technical-architecture.md)** | System architecture, technology stack, and design patterns |
-| **[Setup Guide](docs/setup-guide.md)** | Step-by-step installation and configuration instructions |
-| **[API Documentation](docs/api-documentation.md)** | Complete API reference and examples |
-| **[Database Schema](docs/database-schema.md)** | Firestore collections, security rules, and query patterns |
+| **[QUICK_START.md](./QUICK_START.md)** | ⚡ 5-minute setup guide (START HERE!) |
+| **[Requirements](docs/requirements.md)** | Complete feature list and requirements |
+| **[Technical Architecture](docs/technical-architecture.md)** | System design and architecture |
+| **[Setup Guide](docs/setup-guide.md)** | Detailed installation instructions |
+| **[API Documentation](docs/api-documentation.md)** | Service APIs and methods |
+| **[Database Schema](docs/database-schema.md)** | Firestore structure and security rules |
+| **[Security Guide](docs/security-improvements.md)** | Security features and best practices |
+| **[Deployment Checklist](docs/deployment-checklist.md)** | Pre-deployment checklist |
 
 ---
 
 ## 🛠️ Technology Stack
 
 ### Frontend
-- **Framework:** React 18.x with TypeScript
-- **Build Tool:** Vite
-- **Styling:** Tailwind CSS
-- **State Management:** Zustand
+- **Framework:** React 18 with TypeScript
+- **Build Tool:** Vite 5
+- **Styling:** Tailwind CSS 3
 - **Routing:** React Router v6
 - **Charts:** Recharts
-- **Forms:** React Hook Form
-- **Animations:** Framer Motion
+- **Forms:** React Hook Form + Zod validation
+- **State:** React Context + Custom Hooks
+- **Toasts:** Custom Toast System
 
-### Backend & Database
-- **Authentication:** Firebase Authentication
-- **Database:** Firebase Firestore (Free tier)
-- **Serverless Functions:** Firebase Cloud Functions
-- **Storage:** Firebase Storage
+### Backend & Services
+- **Authentication:** Firebase Auth (Email/Password + 2FA)
+- **Database:** Firestore (NoSQL, real-time)
+- **Email:** EmailJS (OTP/2FA emails)
+- **Photo Storage:** Base64 (no Firebase Storage needed!)
+- **Stock Prices:** Yahoo Finance API
 
-### Deployment
-- **Hosting:** GitHub Pages
-- **CI/CD:** GitHub Actions
-- **DNS:** GitHub Domains
+### Security
+- **Rate Limiting:** Client-side with planned server-side upgrade
+- **Validation:** Zod schemas + custom validators
+- **Sanitization:** XSS protection
+- **Headers:** CSP, HSTS, X-Frame-Options
+- **Password:** 8+ chars, mixed case, numbers, symbols
+
+### Deployment Options
+- Firebase Hosting (recommended)
+- Vercel
+- Netlify
+- GitHub Pages
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   GitHub Pages (Frontend)                │
-│  React SPA + Tailwind CSS + TypeScript + Zustand        │
-└──────────────────────┬──────────────────────────────────┘
-                       │ HTTPS
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│                  Firebase Backend                        │
-│  ┌─────────────────────────────────────────────────┐   │
-│  │  Authentication  │  Firestore  │  Cloud Functions│   │
-│  └─────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│         React SPA (Vite + TypeScript)            │
+│  ┌────────────┬────────────┬──────────────┐     │
+│  │  Dashboard │ Portfolios │ Transactions │     │
+│  └────────────┴────────────┴──────────────┘     │
+│  ┌────────────────────────────────────────┐     │
+│  │   Services Layer (Firebase SDK)        │     │
+│  │   - Auth  - Portfolio  - Transaction   │     │
+│  │   - OTP   - Storage    - Validation    │     │
+│  └────────────────────────────────────────┘     │
+└──────────────────┬───────────────────────────────┘
+                   │ HTTPS/WSS
+                   ▼
+┌──────────────────────────────────────────────────┐
+│            Firebase Backend (Free Tier)          │
+│  ┌─────────────┬──────────────┬──────────────┐  │
+│  │  Auth       │  Firestore   │  EmailJS     │  │
+│  │  (Users)    │  (Database)  │  (OTP Email) │  │
+│  └─────────────┴──────────────┴──────────────┘  │
+└──────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📦 Installation
+## 📦 Project Structure
 
-### Prerequisites
-- Node.js >= 18.0.0
-- npm >= 9.0.0 or yarn >= 1.22.0
-- Firebase account (free tier)
-- Git
-
-### Quick Start
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/supawitsaelimscb/Portfolio-Management-Web-Application.git
-   cd Portfolio-Management-Web-Application
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up Firebase**
-   - Create a Firebase project at [https://console.firebase.google.com](https://console.firebase.google.com)
-   - Enable Authentication (Email/Password)
-   - Create Firestore database
-   - Copy Firebase config
-
-4. **Configure environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Edit `.env` with your Firebase credentials:
-   ```env
-   VITE_FIREBASE_API_KEY=your_api_key
-   VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-   VITE_FIREBASE_PROJECT_ID=your_project_id
-   VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-   VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-   VITE_FIREBASE_APP_ID=your_app_id
-   ```
-
-5. **Start development server**
-   ```bash
-   npm run dev
-   ```
-   
-   Open [http://localhost:5173](http://localhost:5173)
-
-For detailed setup instructions, see [Setup Guide](docs/setup-guide.md).
+```
+src/
+├── components/        # UI components
+│   ├── *Modal.tsx     # Various modals
+│   ├── *Chart.tsx     # Chart components
+│   └── *List.tsx      # List components
+├── pages/            # Application pages
+│   ├── Dashboard.tsx
+│   ├── Login.tsx
+│   ├── Register.tsx
+│   ├── Settings.tsx
+│   ├── PVDDetail.tsx
+│   └── CooperativeDetail.tsx
+├── services/         # Business logic & APIs
+│   ├── auth.ts
+│   ├── portfolio.ts
+│   ├── transaction.ts
+│   ├── otp.ts
+│   └── storage.ts
+├── hooks/           # Custom React hooks
+├── types/           # TypeScript definitions
+├── utils/           # Utilities & helpers
+└── contexts/        # React contexts
+```
 
 ---
 
 ## 🚀 Deployment
 
-### Deploy to GitHub Pages
+### Option 1: Firebase Hosting (Recommended)
+```bash
+npm install -g firebase-tools
+firebase login
+firebase init hosting
+npm run build
+firebase deploy
+```
 
-1. **Update `package.json`**
-   ```json
-   {
-     "homepage": "https://yourusername.github.io/your-repo-name"
-   }
-   ```
+### Option 2: Vercel (One Command)
+```bash
+npm install -g vercel
+vercel
+```
 
-2. **Build and deploy**
-   ```bash
-   npm run build
-   npm run deploy
-   ```
+### Option 3: Netlify
+```bash
+npm install -g netlify-cli
+netlify deploy
+```
 
-### Automatic Deployment
+**Important:** Set environment variables in your hosting platform's dashboard!
 
-The project includes GitHub Actions workflow for automatic deployment:
-- Push to `main` branch triggers deployment
-- Build, test, and deploy automatically
-- No manual intervention required
-
-See [Technical Architecture](docs/technical-architecture.md#deployment-architecture) for details.
-
----
-
-## 📱 Screenshots
-
-### Dashboard
-![Dashboard](docs/images/dashboard.png)
-
-### Portfolio Management
-![Portfolio](docs/images/portfolio.png)
-
-### Analytics
-![Analytics](docs/images/analytics.png)
+See **[Deployment Checklist](docs/deployment-checklist.md)** for full guide.
 
 ---
 
-## 🎯 Roadmap
+## 🎯 What's Implemented vs What's Not
 
-### Phase 1: MVP ✅
-- [x] Dashboard with summary view
-- [x] Basic CRUD for all investment types
-- [x] Charts and visualizations
-- [x] Responsive layout
-- [x] Firebase integration
+### ✅ Fully Implemented
+- All 5 investment types (Cooperative, PVD, Mutual Fund, Stock, Savings)
+- Portfolio CRUD operations
+- Transaction management with type-specific fields
+- Dashboard with charts and statistics
+- Dark mode
+- Profile management with photos (Base64)
+- 2FA/OTP authentication
+- PDF and CSV exports
+- Security features (validation, rate limiting, XSS protection)
+- Responsive design
 
-### Phase 2: Enhanced Features 🚧
-- [ ] Advanced analytics
-- [ ] Export to PDF/Excel
-- [ ] Bulk CSV import
-- [ ] Custom investment types
-- [ ] Dark mode enhancement
+### ⚠️ Not Implemented (From Original Docs)
+- Multi-language support (only English)
+- Firebase Cloud Functions
+- Bulk CSV import of transactions
+- Email notifications
+- Real-time market data feeds (except Yahoo Finance for stocks)
+- Advanced AI-powered insights
 
-### Phase 3: Advanced Features 📋
-- [ ] Real-time market data integration
-- [ ] Investment goals and planning
-- [ ] Email notifications
-- [ ] Multi-user portfolios
-
-### Phase 4: Premium Features 💡
-- [ ] Native mobile apps
-- [ ] AI-powered insights
-- [ ] Financial advisor tools
-- [ ] Cryptocurrency tracking
+**The app is fully functional for personal portfolio management!**
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
+Contributions are welcome! Please:
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create a feature branch (`git checkout -b feature/NewFeature`)
+3. Commit your changes (`git commit -m 'Add NewFeature'`)
+4. Push to the branch (`git push origin feature/NewFeature`)
 5. Open a Pull Request
-
-### Development Guidelines
-- Follow TypeScript best practices
-- Write tests for new features
-- Update documentation
-- Follow conventional commits
-- Ensure all tests pass
-
----
-
-## 🧪 Testing
-
-```bash
-# Run unit tests
-npm run test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run E2E tests
-npm run test:e2e
-
-# Type checking
-npm run type-check
-
-# Linting
-npm run lint
-```
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is open source and available for personal use.
 
 ---
 
@@ -297,28 +276,31 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [React](https://react.dev) - UI framework
-- [Firebase](https://firebase.google.com) - Backend and database
-- [Tailwind CSS](https://tailwindcss.com) - Styling
-- [Recharts](https://recharts.org) - Data visualization
+- [React](https://react.dev) - The UI framework
+- [Firebase](https://firebase.google.com) - Backend platform
+- [Tailwind CSS](https://tailwindcss.com) - CSS framework
+- [Recharts](https://recharts.org) - Chart library
 - [Vite](https://vitejs.dev) - Build tool
+- [EmailJS](https://www.emailjs.com/) - Email service for OTP
+- [Yahoo Finance](https://finance.yahoo.com/) - Stock price data
 
 ---
 
 ## 📞 Support
 
-If you have any questions or issues:
+Need help? Check out:
 
-1. Check the [Documentation](docs/)
-2. Search [Existing Issues](https://github.com/supawitsaelimscb/Portfolio-Management-Web-Application/issues)
-3. Create a [New Issue](https://github.com/supawitsaelimscb/Portfolio-Management-Web-Application/issues/new)
+1. **[QUICK_START.md](./QUICK_START.md)** - Fast setup guide
+2. **[Documentation](docs/)** - Comprehensive guides
+3. **[Firebase Docs](https://firebase.google.com/docs)** - Firebase help
+4. **[Issues](https://github.com/supawitsaelimscb/Portfolio-Management-Web-Application/issues)** - Report bugs
 
 ---
 
 ## ⭐ Show Your Support
 
-Give a ⭐️ if this project helped you!
+Give a ⭐️ if this project helped you manage your investments!
 
 ---
 
-**Built with ❤️ using React and Firebase**
+**Built with ❤️ for better financial management**

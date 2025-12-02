@@ -19,12 +19,16 @@ export const storageService = {
       
       reader.onload = () => {
         const base64String = reader.result as string;
-        console.log('✅ Profile photo converted to Base64');
+        if (import.meta.env.DEV) {
+          console.log('✅ Profile photo converted to Base64');
+        }
         resolve(base64String);
       };
       
       reader.onerror = () => {
-        console.error('❌ Error reading file');
+        if (import.meta.env.DEV) {
+          console.error('❌ Error reading file');
+        }
         reject(new Error('Failed to read image file'));
       };
       
@@ -37,7 +41,9 @@ export const storageService = {
   async deleteProfilePhoto(_photoURL: string): Promise<void> {
     // For Base64 data URLs, we don't need to delete anything from storage
     // The data is removed when we update Firestore
-    console.log('✅ Profile photo marked for removal');
+    if (import.meta.env.DEV) {
+      console.log('✅ Profile photo marked for removal');
+    }
     return Promise.resolve();
   },
 };

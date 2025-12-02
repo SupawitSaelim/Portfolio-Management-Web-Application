@@ -2,8 +2,22 @@ import { doc, setDoc, getDoc, deleteDoc, Timestamp } from 'firebase/firestore';
 import { db } from './firebase';
 import emailjs from '@emailjs/browser';
 
-// Initialize EmailJS with your public key
-emailjs.init('cxzV3gkPOBXHyED-t');
+// Validate EmailJS environment variables
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+
+if (!EMAILJS_PUBLIC_KEY || !EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID) {
+  console.warn(
+    '⚠️ EmailJS not configured. OTP emails will not be sent.\n' +
+    'Please set VITE_EMAILJS_PUBLIC_KEY, VITE_EMAILJS_SERVICE_ID, and VITE_EMAILJS_TEMPLATE_ID in .env file.'
+  );
+}
+
+// Initialize EmailJS with public key from environment
+if (EMAILJS_PUBLIC_KEY) {
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+}
 
 export const otpService = {
   // Generate a random 6-digit OTP
@@ -70,6 +84,11 @@ export const otpService = {
 
   // Send OTP via email using EmailJS (FREE - 200 emails/month)
   async sendOTPEmail(email: string, otp: string): Promise<void> {
+    // Check if EmailJS is configured
+    if (!EMAILJS_PUBLIC_KEY || !EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID) {
+      throw new Error('Email service is not configured. Please contact administrator.');
+    }
+
     try {
       const templateParams = {
         email: email,  // Must match {{email}} in template
@@ -77,13 +96,15 @@ export const otpService = {
         otp_code: otp,
       };
       
-      const response = await emailjs.send(
-        'service_9dlcs1k',
-        'template_91uswa4',
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
         templateParams
       );
       
-      console.log('✅ OTP email sent successfully to:', email.replace(/(.{3}).*(@.*)/, '$1***$2'));
+      if (import.meta.env.DEV) {
+        console.log('✅ OTP email sent successfully to:', email.replace(/(.{3}).*(@.*)/, '$1***$2'));
+      }
     } catch (error) {
       console.error('❌ Failed to send OTP email');
       throw new Error('Failed to send verification code. Please try again.');
