@@ -281,7 +281,6 @@ Contributions are welcome! Please:
 3. Commit your changes (`git commit -m 'Add NewFeature'`)
 4. Push to the branch (`git push origin feature/NewFeature`)
 5. Open a Pull Request
-
 ---
 
 ## 📄 License
