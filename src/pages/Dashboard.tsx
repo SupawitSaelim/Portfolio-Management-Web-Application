@@ -52,19 +52,6 @@ export function Dashboard() {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('th-TH', {
-      style: 'currency',
-      currency: 'THB',
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
-
-  const formatPercentage = (percentage: number) => {
-    const sign = percentage >= 0 ? '+' : '';
-    return `${sign}${percentage.toFixed(2)}%`;
-  };
-
   const handleAddTransaction = (portfolio: Portfolio) => {
     setSelectedPortfolio(portfolio);
     setIsTransactionModalOpen(true);

@@ -8,11 +8,9 @@ import { PVDDetail } from './pages/PVDDetail'
 import { CooperativeDetail } from './pages/CooperativeDetail'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
-const basename = import.meta.env.MODE === 'production' ? '/Portfolio-Management-Web-Application' : '';
-
 function App() {
   return (
-    <Router basename={basename}>
+    <Router>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />

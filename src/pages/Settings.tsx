@@ -4,7 +4,7 @@ import { useToast } from '../contexts/ToastContext';
 import { ToastContainer } from '../components/ToastContainer';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../services/firebase';
-import { updateProfile, updatePassword, updateEmail, EmailAuthProvider, reauthenticateWithCredential, verifyBeforeUpdateEmail, onAuthStateChanged } from 'firebase/auth';
+import { updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential, verifyBeforeUpdateEmail, onAuthStateChanged } from 'firebase/auth';
 import { doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { storageService } from '../services/storage';

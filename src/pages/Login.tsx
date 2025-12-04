@@ -46,7 +46,6 @@ export function Login() {
 
     // Check rate limiting
     if (!loginRateLimiter.isAllowed(sanitizedEmail)) {
-      const remaining = loginRateLimiter.getRemainingAttempts(sanitizedEmail);
       setLocalError('Too many login attempts. Please try again in 15 minutes.');
       setIsLoading(false);
       return;
