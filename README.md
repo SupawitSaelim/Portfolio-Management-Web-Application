@@ -61,7 +61,7 @@ A modern, secure web application for managing personal investment portfolios bui
 
 ## 🚀 Quick Start
 
-**Want to get started fast?** Check out **[QUICK_START.md](./QUICK_START.md)** for a 5-minute setup guide!
+**Want to get started fast?** Follow these steps:
 
 ### Prerequisites
 - Node.js >= 18.0.0
@@ -71,20 +71,44 @@ A modern, secure web application for managing personal investment portfolios bui
 ### Installation
 
 ```bash
-# Clone and install
+# 1. Clone the repository
 git clone https://github.com/supawitsaelimscb/Portfolio-Management-Web-Application.git
 cd Portfolio-Management-Web-Application
+
+# 2. Install dependencies
 npm install
 
-# Copy and configure environment variables
-cp .env.example .env
-# Edit .env with your Firebase credentials
+# 3. Create Firebase project
+# Go to https://console.firebase.google.com
+# Create a new project (or use existing)
+# Enable Authentication (Email/Password)
+# Create Firestore Database (Start in test mode)
 
-# Run development server
+# 4. Copy and configure environment variables
+cp .env.example .env
+# Edit .env and fill in your Firebase config:
+# - VITE_FIREBASE_API_KEY
+# - VITE_FIREBASE_AUTH_DOMAIN
+# - VITE_FIREBASE_PROJECT_ID
+# - VITE_FIREBASE_STORAGE_BUCKET
+# - VITE_FIREBASE_MESSAGING_SENDER_ID
+# - VITE_FIREBASE_APP_ID
+
+# 5. (Optional) Setup EmailJS for 2FA
+# Go to https://www.emailjs.com
+# Create account and email template
+# Add to .env:
+# - VITE_EMAILJS_PUBLIC_KEY
+# - VITE_EMAILJS_SERVICE_ID
+# - VITE_EMAILJS_TEMPLATE_ID
+
+# 6. Run development server
 npm run dev
 ```
 
 Visit http://localhost:5173 and start tracking your investments!
+
+**Detailed Setup:** See **[QUICK_START.md](./QUICK_START.md)** for step-by-step guide with screenshots.
 
 ---
 

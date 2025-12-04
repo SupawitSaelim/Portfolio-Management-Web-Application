@@ -33,3 +33,11 @@ dist-ssr
 # Build files
 build
 .cache
+
+# Firebase
+.firebase
+.firebaserc
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebase/
